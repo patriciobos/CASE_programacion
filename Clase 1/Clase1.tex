@@ -1,0 +1,730 @@
+\documentclass[aspectratio=169]{beamer}
+%la opcion hangout es para complilar en modo imprimible
+%\documentclass[hangout]{beamer}
+
+\mode<presentation>
+{
+  \usetheme{Berkeley}
+  \setbeamercovered{transparent}
+  \setbeamertemplate{navigation symbols}{}
+}
+
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\usepackage{textpos}
+\usepackage{hyperref}
+\usepackage{caption}
+%\captionsetup[figure]{labelformat=empty}
+
+%\usetikzlibrary{shapes,arrows}
+\setbeamerfont{author}{size=\large}
+\setbeamerfont{institute}{size=\normalsize\bfseries}
+\setbeamerfont{title}{size=\Large\bfseries}
+\setbeamerfont{subtitle}{size=\huge}
+
+\definecolor{darkblue}{RGB}{51,51,179}
+\setbeamercolor{bgcolor}{fg=white,bg=darkblue}
+
+\title[Clase 1]{Programación de Microcontroladores - Clase 1}
+\subtitle{Clase 1 - C para Sistemas Embebidos}
+\author[]{Esp. Ing. Patricio Bos}
+\institute[CESE-FIUBA]{Carrera de Especialización en Sistemas Embebidos - FIUBA}
+\date{\today}
+
+%\subtitle{Framework para aplicaciones de control de ambientes}
+\titlegraphic{\includegraphics[width=5cm]{./imagenes/red.jpg}}
+
+
+\subject{Programación de Microprocesadores. Carrera de Especialización en Sistemas Embebidos}
+% This is only inserted into the PDF information catalog. Can be left
+% out. 
+
+\pgfdeclareimage[height=1.5cm]{university-logo}{./imagenes/logo-facu-inverso.png}
+\logo{\pgfuseimage{university-logo}}
+
+
+% If you wish to uncover everything in a step-wise fashion, uncomment
+% the following command: 
+
+\beamerdefaultoverlayspecification{<+->}
+  
+\begin{document}
+
+%Captions sin el texto "Figure"
+\setbeamertemplate{caption}{\raggedright\insertcaption\par}
+
+
+%-------------------------------------------------%
+%-------------------------------------------------%
+% PORTADA
+%-------------------------------------------------%
+%-------------------------------------------------%
+
+\begingroup
+\makeatletter
+\setlength{\hoffset}{-.5\beamer@sidebarwidth}
+\makeatother
+\begin{frame}[plain,noframenumbering]
+\begin{center}
+%\vspace{5px}
+\hfill
+    \begin{beamercolorbox}[center,dp=3ex,ht=10.25ex, wd=1\linewidth]{bgcolor}
+        \Large\textbf{Programación de Microcontroladores}\\
+        \vspace{5px}
+        \Large\textbf{Clase 1}
+    \end{beamercolorbox}
+\hfill\hfill
+\\
+\vspace{5px}
+\textbf{Carrera de Especialización en Sistemas Embebidos - FIUBA}\\
+\vspace{10px}
+\texttt{Esp. Ing. Patricio Bos}\\
+
+\vfill
+\tiny versión: 2017-02-8 rev 0.1 
+
+\end{center}
+\end{frame}
+\endgroup
+
+%-------------------------------------------------%
+%-------------------------------------------------%
+
+\begin{frame}{\textbf{Organización de la presentación}}
+  \tableofcontents
+  % You might wish to add the option [pausesections]
+\end{frame}
+%
+%
+
+%-------------------------------------------------%
+%-------------------------------------------------%
+\section{Introducción}
+%-------------------------------------------------%
+%-------------------------------------------------%
+
+
+\subsection{Consideraciones del Curso}
+
+\begin{frame}{Disclaimer}
+	\begin{itemize}
+		\item Las presentaciones de este curso está basadas en el material de la asignatura ``Sistemas Digitales'' de la UNQ a cargo del prof. Ing. José Juarez.
+		\vspace{10px}
+		\item Los ejemplo de código fueron recopilados y preparados por el Esp. Ing. Eric Pernia.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Condiciones de aprobación}
+	\begin{itemize}
+		\item 6 ejercicios prácticos de entrega obligatoria.  Plazo máximo de entrega 2 semanas desde la entrega del enunciado.
+		\vspace{10px}
+		\item Examen teórico escrito multiple-choice en la última clase.
+  	\vspace{10px}
+		\item 75\% de asistencia a las clases.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Bibliografía}
+	\begin{itemize}
+		\item The C programming languaje K\& R
+		\vspace{10px}
+		\item Expert C programming \- Deep C sectrets
+  	\vspace{10px}
+		\item The C puzzle book
+	\end{itemize}
+\end{frame}
+
+
+
+\section{Repaso de C}
+
+\subsection{Motivación para usar C}
+
+\begin{frame}{Motivación para usar C}
+	\begin{itemize}
+		\item Lenguaje estructurado de ``mediano'' nivel (o assembler de alto nivel).
+		\vspace{10px}
+		\item Razonablemente fácil de aprender, comprender, programar y depurar.
+    \vspace{10px}		  
+		\item Acceso directo a las APIs de bajo nivel del HW (seguramente escritas en C).
+    \vspace{10px}		
+    \item Es procesador-independiente y no está atado a ningún microprocesador en particular.	
+    \vspace{10px}
+		%\item Reducción de tiempo de desarrollo mediante reutilización de código (bibliotecas).
+		%\item Con buenas prácicas de programación se puede facilitar/mejorar legibilidad, mantenibilidad, portabilidad, etc...
+		%\vspace{10px}
+		\item Existencia de compiladores gratuitos para prácticamente todos los microprocesadores del mercado.
+		\vspace{10px}
+		\item Extenso soporte (bibliografía, cursos, artículos, foros, etc...).
+		\vspace{10px}
+	\end{itemize}
+\end{frame}
+
+
+\subsection{Consideraciones de performance}
+
+\begin{frame}{Eficiencia y desempeño del lenguaje C}
+  
+\begin{minipage}[c]{1.0\linewidth}
+
+	\begin{minipage}[c]{0.5\textwidth}
+    \begin{itemize}
+      \item La eficiencia más alta en cuanto a tamaño de código y velocidad de ejecución se logra en assembler.  Un compilador de C puede acercase a esta eficiencia si está optimizado para la arquitectura del uC.
+      \vspace{10px}
+      \item Comparado con assembler, en C se puede generar código más confiable, portable, mantenible y escalable.
+      \vspace{10px}
+      \item Comparado con otros lenguajes de alto nivel, en C se puede generar código más compacto y eficiente.
+    \end{itemize}	
+  \end{minipage}
+	\hspace{.1\linewidth}
+	\begin{minipage}[c]{0.4\linewidth}
+		\begin{figure}[H]
+			{\includegraphics[width=\textwidth]{./imagenes/CvsAssembly.png}}
+		\end{figure}	  	  	
+	\end{minipage}
+\end{minipage}
+
+\end{frame}  
+  
+\begin{frame}{Ejemplos de optimización}
+  \begin{itemize}
+    \item uC con arquitectura basada en acumuladores trabajan mejor con variables globales.
+    \vspace{10px}
+    \item uC con arquitectura basada en registros trabajan mejor con variables locales.
+    \vspace{10px}
+    \item Las variables locales permiten mejor modularidad y por lo tanto código más portable y reutilizable.
+    \vspace{10px}
+    \item Si el desempeño de una sección de código es crítica se puede hacer en assembler.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+control de flujo
+directivas precompilador
+tipos
+prefijos sufijos
+modificadores 
+operadores aritméticos
+operadores de bit
+
+\end{frame}
+
+\section{C para sistemas embebidos}
+
+\begin{frame}{}
+	\begin{itemize}
+		\item
+		\vspace{5px}
+		\item
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}{\textbf{Tipos de variables}}
+	\begin{itemize}
+		\item \textbf{\texttt{global}}: Almacenamiento global y visibilidad global.
+		\vspace{5px}
+		\item \textbf{\texttt{static}}: Almacenamiento global y visibilidad local.
+		\vspace{5px}
+		\item \textbf{\texttt{local}}: Almacenamiento local y visibilidad local.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Modificadores de clase de almacenamiento}
+	\begin{itemize}
+		\item static
+		\vspace{5px}
+		\item volatile
+		\vspace{5px}
+		\item const
+	\end{itemize}
+\end{frame}
+
+\subsection{Control de flujo}
+
+
+
+%%-------------------------------------------------%
+%\subsection[Topología]{Topología de la red}
+%%-------------------------------------------------%
+%
+%\begin{frame}{Topología de la Red}{Estrella o punto a punto}
+%
+%
+%
+%\begin{frame}{Topología Punto a punto}{Árbol de Cluster}
+%\begin{minipage}[c]{1.0\linewidth}
+%\begin{minipage}[c]{0.45\linewidth}
+%		\begin{itemize}
+%			\item Mayoría de FFDs.
+%			\vspace{10px}
+%			\item 1 \textit{overall PAN coordinator}.
+%			\vspace{10px}
+%			\item RFDs al final de una rama.
+%			\vspace{10px}
+%			\item Aumenta el área de covertura.
+%			\vspace{10px}
+%			\item Aumenta la latencia de la red.
+%		\end{itemize}	
+%	\end{minipage}
+%	\hspace{-15px}
+%	\begin{minipage}[c]{0.65\linewidth}
+%		\begin{figure}[H]
+%			{\includegraphics[width=.8\textwidth]{./imagenes/cluster}}
+%		\end{figure}	  	  	
+%	\end{minipage}
+%\end{minipage}
+%\end{frame}
+%
+%%-------------------------------------------------%
+%\subsection[Arquitectura]{Arquitectura del estándar}
+%%-------------------------------------------------%
+%
+%\begin{frame}{Arquitectura del estándar}
+%
+%\begin{minipage}[c]{1.0\linewidth}
+%	\begin{minipage}[c]{0.6\linewidth}
+%		\begin{itemize}
+%			\item MAC Sublayer
+%			\begin{itemize}
+%				\item Beacon management
+%				\item Channel access
+%				\item GTSs management
+%				\item Frame validation, ACKs
+%				\item Asociación y desasociación de dispositivos
+%			\end{itemize}
+%			\vspace{10px}
+%			\item Physical Layer (PHY):
+%			\begin{itemize}
+%				\item Activación/Desactivación de RF
+%				\item ED, LQI, Clear Channel Assessment (CCA)
+%				\item Channel selection
+%				\item Tx y Rx de paquetes a través del medio físico
+%			\end{itemize}
+%			\vspace{10px}
+%		\end{itemize}	
+%	  \end{minipage}
+%	  \begin{minipage}[c]{0.35\linewidth}
+%		\begin{figure}[H]
+%			{\includegraphics[width=.6\textwidth]{./imagenes/arquitectura}}
+%		\end{figure}	  	  	
+%	  \end{minipage}
+%\end{minipage}
+%
+%\end{frame}
+%
+%
+%\begin{frame}[t]{MAC: Beacons, Supertramas y GTSs}
+%\begin{minipage}[c]{1.0\linewidth}
+%\begin{minipage}[c]{0.35\linewidth}
+%		\begin{itemize}
+%			\item 16 time slots.
+%			\vspace{5px}
+%			\item Contention Access Period (CAP)\\ \textbf{con CSMA/CA}.
+%			\vspace{5px}
+%			\item Contention Free Period (CFP) para los GTSs, \textbf{sin CSMA/CA}.
+%			\vspace{5px}
+%			\item Los GTSs son opcionales y reducen el CAP.
+%			\vspace{5px}
+%			\item Tiempo inactivo $\rightarrow$ modo bajo consumo.
+%		\end{itemize}	
+%	\end{minipage}
+%%	\hspace{-5px}
+%	\begin{minipage}[c]{0.65\linewidth}
+%		\begin{figure}[H]
+%			\includegraphics[width=1\linewidth]{./imagenes/superFrame}\\
+%		\end{figure}	  	  	
+%	\end{minipage}
+%\end{minipage}
+%%\vspace{10px}
+%%	\begin{figure}[H]
+%%		\includegraphics[height=.35\textheight]{./imagenes/superFrame}\\
+%%	\end{figure}
+%
+%\end{frame}
+%
+%%--------------------------------------------------------------------%
+%\subsection[Transferencia de datos]{Modelo de Transferencia de datos}
+%%--------------------------------------------------------------------%
+%
+%
+%\begin{frame}[t]{Transferencia de Datos}
+%\textbf{Con beacon}
+%%\vspace{10px}
+%\begin{columns}[t]
+%	\begin{column}{.5\textwidth}
+%		\begin{minipage}[t][0.7\textheight][s]{\columnwidth}
+%			\begin{figure}[H]
+%				\includegraphics[height=.65\textheight]{./imagenes/dev-coord-beacon.jpg}
+%				\vfill
+%				\vspace{10px}
+%				\caption{Device $\rightarrow$ Coordinator}
+%			\end{figure}
+%		\end{minipage}
+%	\end{column}
+%	\begin{column}{.5\textwidth}
+%		\begin{minipage}[t][0.7\textheight][s]{\columnwidth}
+%			\begin{figure}[H]
+%				\includegraphics[height=.7\textheight]{./imagenes/coord-dev-beacon.jpg}
+%				\vfill
+%				\caption{Coordinator $\rightarrow$ Device}
+%			\end{figure}	 		
+%		\end{minipage}
+%	\end{column}
+%\end{columns}
+%\end{frame}
+%
+%\begin{frame}[t]{Transferencia de Datos}
+%\textbf{Sin beacon}
+%%\vspace{10px}
+%\begin{columns}[t]
+%	\begin{column}{.5\textwidth}
+%		\begin{minipage}[t][0.7\textheight][s]{\columnwidth}
+%			\begin{figure}[H]
+%				\includegraphics[height=.45\textheight]{./imagenes/dev-coord-sinbeacon.jpg}
+%				\vfill
+%				\vspace{10px}
+%				\caption{Device $\rightarrow$ Coordinator}
+%			\end{figure}
+%		\end{minipage}
+%	\end{column}
+%	\begin{column}{.5\textwidth}
+%		\begin{minipage}[t][0.7\textheight][s]{\columnwidth}
+%			\begin{figure}[H]
+%				\includegraphics[height=.5\textheight]{./imagenes/coord-dev-sinbeacon.jpg}
+%				\vfill
+%				\caption{Coordinator $\rightarrow$ Device}
+%			\end{figure}	 		
+%		\end{minipage}
+%	\end{column}
+%\end{columns} 	  	
+%\end{frame}
+%
+%
+%%%--------------------------------------------------------------------%
+%%\subsection[CSMA/CA]{CSMA/CA}
+%%%--------------------------------------------------------------------%
+%%
+%%\begin{frame}[T]{Carrier Sense multiple Access with Collision Avoidance}
+%%
+%%Slotted CSMA/CA vs Unslotted CSMA/CA
+%%
+%%\vspace{10px}
+%%
+%%		\begin{figure}[H]
+%%			\includegraphics[height=.8\textheight]{./imagenes/CSMA-CA}\\
+%%%			\vspace{15px}
+%%%			\includegraphics[height=.3\textheight]{./imagenes/unsolotted.jpg}
+%%		\end{figure}
+%%\end{frame}
+%
+%
+%%--------------------------------------------------------------------%
+%\subsection[Tramas]{Estructura de las Tramas}
+%%--------------------------------------------------------------------%
+%
+%\begin{frame}{Estructura de las Tramas}
+%Se definen 4 tipos de trama MAC:
+%\vspace{5px}
+%	\begin{itemize}
+%		\item Beacon
+%		\vspace{5px}
+%		\item Data
+%		\vspace{5px}
+%		\item Acknowledgement
+%		\vspace{5px}
+%		\item MAC Command
+%		\vspace{5px}
+%	\end{itemize}
+%	\begin{figure}[H]
+%		\includegraphics[width=.8\textwidth]{./imagenes/frameStructure}
+%	\end{figure}	 	
+%\end{frame}
+%
+%\begin{frame}[t]{Tramas}
+%Tipo de Frame: \textbf{Beacon}
+%\vspace{10px}
+%	\begin{figure}[H]
+%		\includegraphics[width=1\textwidth]{./imagenes/beacon.jpg}
+%	\end{figure}	  	  	
+%\end{frame}
+%
+%\begin{frame}[t]{Tramas}
+%Tipo de Frame: \textbf{Data}
+%\vspace{10px}
+%	\begin{figure}[H]
+%		\includegraphics[width=1\textwidth]{./imagenes/data.jpg}
+%	\end{figure}	  	  	
+%\end{frame}
+%
+%
+%\begin{frame}[t]{Tramas}
+%Tipo de Frame: \textbf{Acknowledgement} (Ack)
+%\vspace{10px}
+%	\begin{figure}[H]
+%	\centering
+%		\includegraphics[width=.7\textwidth]{./imagenes/ack.jpg}
+%	\end{figure}	  	  	
+%\end{frame}
+%
+%\begin{frame}[t]{Tramas}
+%Tipo de Frame: \textbf{MAC Command}
+%\vspace{10px}
+%	\begin{figure}[H]
+%		\includegraphics[width=1\textwidth]{./imagenes/maccommand.jpg}
+%	\end{figure}	  	  	
+%\end{frame}
+%
+%
+%\begin{frame}[t]{Tramas}
+%Frame Control Field
+%	\begin{figure}[H]
+%	\centering
+%		\includegraphics[height=.3\textheight]{./imagenes/FCF.jpg}\\
+%		\vspace{20px}
+%		\includegraphics[height=.3\textheight]{./imagenes/frametype.jpg}
+%		\hspace{20px} 
+%		\includegraphics[height=.3\textheight]{./imagenes/addressingmode.jpg}
+%	\end{figure} 	
+%\end{frame}
+%
+%
+%%--------------------------------------------------------------------%
+%\subsection[Modulación]{Modulación}
+%%--------------------------------------------------------------------%
+%
+%\begin{frame}{Modulación}
+%\begin{minipage}[c]{1.0\linewidth}
+%\begin{figure}[H]
+%	\includegraphics[height=1\textheight]{./imagenes/modulaciones.jpg}
+%		\end{figure}	
+%\end{minipage}
+%\end{frame}
+%
+%%-------------------------------------------------%
+%%-------------------------------------------------%
+%\section{Mote LSE}
+%%-------------------------------------------------%
+%%-------------------------------------------------%
+%
+%%-------------------------------------------------%
+%\subsection[Mote]{Mote}
+%%-------------------------------------------------%
+%\begin{frame}{Nodo Mote LSE-FIUBA} 
+%
+%\begin{minipage}[c]{1.0\linewidth}
+%	\begin{minipage}[c]{0.6\linewidth}
+%		\begin{itemize}
+%			\item Nodo Mote desarrollado en el LSE-FIUBA
+%			\vspace{15px}
+%			\begin{itemize}
+%				\item LPC1343 ARM Cortex-M3 @72MHz
+%				\vspace{5px}
+%				\item Transceptor TI-2520
+%				\vspace{5px}
+%				\item Extensor de rango TI-2591
+%				\vspace{5px}
+%				\item 3 Pulsadores
+%				\vspace{5px}
+%				\item 3 leds
+%				\vspace{5px}
+%				\item Antena y balun en microstrip
+%			\end{itemize}
+%			\vspace{10px}
+%		\end{itemize}
+%	\end{minipage}
+%	\begin{minipage}[c]{0.35\linewidth}
+%		\begin{figure}[H]
+%			\vspace{35px}
+%			\includegraphics[width=1\textwidth]{./imagenes/mote.jpg}
+%			\\
+%			\vspace{10px}
+%			\includegraphics[width=1\textwidth]{./imagenes/motePCB}
+%			\label{Mote LSE}
+%			%\caption{Mote LSE}
+%		\end{figure}	  	  	
+%	\end{minipage}
+%\end{minipage}
+%\end{frame}
+%
+%
+%\begin{frame}{Nodo Mote LSE-FIUBA}{Circuito Esquemático}
+%	\begin{figure}[H]
+%		\includegraphics[height=.95\textheight]{./imagenes/moteSchema}
+%	\end{figure}	  	  	
+%\end{frame}
+%
+%
+%
+%%-------------------------------------------------%
+%\subsection[TI CC2520]{TI CC2520}
+%%-------------------------------------------------%
+%\begin{frame}{Transceptor DSSS TI CC2520} 
+%\begin{minipage}[c]{1.0\linewidth}
+%	\begin{minipage}[c]{0.7\linewidth}
+%		\begin{itemize}
+%			\vspace{5px}
+%			\item 2394-2507 MHz	
+%%			\item VCO, LNA, PA y filtros On-chip	
+%%			\item 3 modos de potencia flexibles para consumo reducido
+%			\vspace{10px}
+%			\item Muy bajo consumo de corriente
+%			\begin{itemize}
+%				\item RX: 18.5 - 22.3 mA.
+%				\item TX: 25.8 - 33.6 mA.
+%			\end{itemize}
+%			\vspace{10px}
+%			\item Interfaz de usuario
+%			\begin{itemize}
+%				\item SPI
+%				\item 6 GPIOs
+%% 				\item Generador de interupciones
+%				\item Respuestas automáticas a diferentes eventos
+%				\item Modo de Packet Sniffer embebido
+%			\end{itemize}
+%			\vspace{10px}
+%		\end{itemize}
+%	\end{minipage}
+%	\begin{minipage}[c]{0.25\linewidth}
+%		\begin{figure}[H]
+%			\includegraphics[width=1\textwidth]{./imagenes/cc2520.jpg}
+%			\label{cc2520}
+%			%\caption{cc2520}
+%		\end{figure}	  	  	
+%	\end{minipage}
+%\end{minipage}
+%\end{frame}
+%
+%
+%\begin{frame}{Soporte por Hardware a 802.15.4 MAC} 
+%\begin{minipage}[c]{1.0\linewidth}
+%	\begin{minipage}[c]{0.70\linewidth}
+%		\begin{itemize}
+%			\vspace{5px}
+%			\item Generador automático de preámbulo	
+%			\vspace{5px}
+%			\item Inserción y detección de palabra de sincronización	
+%			\vspace{5px}
+%			\item CRC-16 en el MAC payload
+%			\vspace{5px}
+%			\item Frame Filtering
+%			\vspace{5px}
+%			\item Ack automático
+%			\vspace{5px}
+%			\item Clear Channel Assessment (CCA)
+%			\vspace{5px}
+%			\item Energy Detection (ED)
+%			\vspace{5px}
+%			\item Link Quality Indication (LQI)
+%%			\vspace{5px}
+%%			\item Seguridad MAC automática (CTR, CBC-MAC,CCM)
+%		\end{itemize}
+%	\end{minipage}
+%	\begin{minipage}[c]{0.25\linewidth}
+%		\begin{figure}[H]
+%			\includegraphics[width=1\textwidth]{./imagenes/cc2520.jpg}
+%		\end{figure}	  	  	
+%	\end{minipage}
+%\end{minipage}
+%\end{frame}
+%
+%\begin{frame}{Circuito de Aplicación Típico}	
+%	\begin{figure}[H]
+%		\includegraphics[height=1\textheight]{./imagenes/applicationcircuit.jpg}
+%	\end{figure}	
+%\end{frame}
+%
+%\begin{frame}{Diagrama Funcional}
+%	\begin{figure}[H]
+%		\includegraphics[height=1\textheight]{./imagenes/diagrama.jpg}
+%	\end{figure}	
+%\end{frame}
+%
+%\begin{frame}{Procesamiento de tramas: Tx}
+%	\begin{figure}[H]
+%		\includegraphics[height=.95\textheight]{./imagenes/txfifo.jpg}
+%	\end{figure}	
+%\end{frame}
+%
+%\begin{frame}{Procesamiento de tramas: Rx filtering}
+%	\begin{figure}[H]
+%		\includegraphics[height=.95\textheight]{./imagenes/filtering.jpg}
+%	\end{figure}	
+%\end{frame}
+%
+%
+%\begin{frame}{Procesamiento de tramas: Rx matching}
+%	\begin{figure}[H]
+%		\includegraphics[height=.95\textheight]{./imagenes/matching.jpg}
+%	\end{figure}	
+%\end{frame}
+%
+%
+%%-------------------------------------------------%
+%%-------------------------------------------------%
+%\section{Referencias}
+%%-------------------------------------------------%
+%%-------------------------------------------------%
+%
+%\begin{frame}[c]{Referencias}
+%
+%%\Large{Referencias}
+%\vspace{20px}
+%\begin{itemize}
+%	\item<.-> \href{http://ecee.colorado.edu/~liue/teaching/comm_standards/2015S_zigbee/802.15.4-2011.pdf}{Estándar IEEE 802.15.4:2011}
+%	\vspace{5px}	
+%	\item<.-> \href{http://www.ieee802.org/15/pub/TG4.html}{IEEE 802.15 - Task Group 4 - Home Page}
+%	\vspace{5px}
+%	\item<.-> \href{	https://standards.ieee.org/about/get/802/802.15.html}{IEEE Get Program}
+%	\vspace{5px}
+%	\item<.-> \href{http://www.nxp.com/documents/data_sheet/LPC1311_13_42_43.pdf}{LPC1343 - Datasheet}
+%	\vspace{5px}
+%	\item<.-> \href{http://www.nxp.com/documents/user_manual/UM10375.pdf}{LPC1343 - User Manual}
+%	\vspace{5px}
+%	\item<.-> \href{http://www.ti.com/product/CC2520/technicaldocuments}{Texas Instrument CC2520 -  Technical Documents}
+%	\vspace{5px}
+%	\item<.-> \href{http://www.ti.com/lit/an/swru120b/swru120b.pdf}{Texas Instrument Design Note - 2.4 GHz Inverted F Antenna}
+%\end{itemize}
+%\end{frame}
+
+%\section*{cartón de gracias}
+
+\begingroup
+\makeatletter
+\setlength{\hoffset}{-.5\beamer@sidebarwidth}
+\makeatother
+\begin{frame}[plain,noframenumbering]
+\begin{center}
+%\vspace{5px}
+\hfill
+    \begin{beamercolorbox}[center,dp=3ex,ht=10.25ex, wd=1\linewidth]{bgcolor}
+        \Large\textbf{Programación de Microcontroladores}\\
+        \vspace{5px}
+        \Large\textbf{Clase 1}
+    \end{beamercolorbox}
+\hfill\hfill
+\\
+\vspace{5px}
+\textbf{Carrera de Especialización en Sistemas Embebidos - FIUBA}\\
+\vspace{10px}
+Esp. Ing. Patricio Bos\\ 
+\texttt{pbos@fi.uba.ar}\\
+
+
+\vspace{10px}
+
+%\begin{figure}[H]
+%	\includegraphics[width=.3\textwidth]{./imagenes/red.jpg}
+%\end{figure}	
+
+\vspace{5px}
+\vfill
+\tiny versión: 2016-08-20 rev 0.1 
+ 	  	
+\end{center}
+\end{frame}
+\endgroup
+
+\end{document}
